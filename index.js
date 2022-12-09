@@ -4,6 +4,16 @@ sample2 = async () => {
 
     let scoresCounter = 0;
     let lives = 3;
+    let speed = 100
+
+    let gameStartSlow = () => {
+        speed = 300
+        gameStart()
+    }
+   let gameStartFast = ()=> {
+       speed = 30 
+       gameStart()
+    }
 
     const vector = new Vector(0, 0);
     const ghostVector = new Vector(0, 0);
@@ -49,6 +59,9 @@ sample2 = async () => {
     };
     const title = new PIXI.Text("MS PACMAN", style);
     const start = new PIXI.Text("START", style);
+    const startSlow = new PIXI.Text("START (easy)", style);
+    const startFast = new PIXI.Text("START (hard)", style);
+
     const restart = new PIXI.Text("RESTART", style);
     const gameover = new PIXI.Text("GAME OVER", style);
     const scores = new PIXI.Text(`Scores: ${scoresCounter}`, style);
@@ -73,8 +86,18 @@ sample2 = async () => {
     
     start.anchor.x = 0.5;
     start.anchor.y = 0.5;
-    start.position.set(800 / 2, 600 / 2);
+    start.position.set(800 / 2, 600 / 3);
     start.scale.set(2)
+
+    startSlow.anchor.x = 0.5;
+    startSlow.anchor.y = 0.5;
+    startSlow.position.set(200, 600 / 2);
+    startSlow.scale.set(1)
+
+    startFast.anchor.x = 0.5;
+    startFast.anchor.y = 0.5;
+    startFast.position.set(600, 600 / 2);
+    startFast.scale.set(1)
 
     gameover.anchor.x = 0.5;
     gameover.anchor.y = 0.5;
@@ -118,15 +141,12 @@ sample2 = async () => {
     );
 
 
-
-    app.stage.addChild(startContainer)
-    startContainer.addChild(spriteBG, start)
-    
-    
+      
     
     let gameStart = function () {
         scoresCounter = 0;
         lives = 3;
+        live.text = `Lives: ${lives}`;
         dots = [];
         pacman.position.set(800 / 2, 600 / 2);
         vector.x = 0
@@ -139,8 +159,9 @@ sample2 = async () => {
         
         app.stage.addChild(mainContainer);
         mainContainer.addChild(spriteBG, title, scores, live, frame, pacman, ghost); 
-        app.stage.removeChild(startContainer);
-        startContainer.removeChild(spriteBG, start);
+        app.stage.removeChild(startContainer, finishContainer);
+        finishContainer.removeChild(finish, restart, gameover)
+        startContainer.removeChild(spriteBG, start, startSlow, startFast);
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
                 let offsets = 100;
@@ -159,7 +180,10 @@ sample2 = async () => {
     //game play setup:
     start.interactive = true;
     start.on('mousedown', gameStart)
-
+    startSlow.interactive = true;
+    startSlow.on('mousedown', gameStartSlow)
+    startFast.interactive = true;
+    startFast.on('mousedown', gameStartFast)
     window.document.onkeydown = (e) => {
         // console.log(spriteBG.position);
         
@@ -235,10 +259,12 @@ sample2 = async () => {
                     live.text = `Lives: ${lives}`;
 
                 } else {
+                    mainContainer.removeChild(spriteBG, title, scores, live, frame, pacman, ghost);
                     app.stage.removeChild(mainContainer);
                     finishContainer.removeChild(finish);
                     finishContainer.addChild(gameover, restart);
                     app.stage.addChild(finishContainer);
+                    ticker.stop()
                 }
             }
 
@@ -246,8 +272,17 @@ sample2 = async () => {
         );
     }
 
+    let beforeGameStart = function () {
+        finishContainer.removeChild(gameover, restart);
+        app.stage.removeChild(finishContainer);
+        startContainer.addChild(spriteBG, start, startSlow, startFast)
+        app.stage.addChild(startContainer);
+    }
+    beforeGameStart()
+
+    
     restart.interactive = true;
-    restart.on('mousedown', gameStart)
+    restart.on('mousedown', beforeGameStart)
 
     let earthquake = function () {
         scores.scale.set(2)
@@ -260,6 +295,7 @@ sample2 = async () => {
 
     let pacmanIsRotate = false
 
+    
     const updatePositions = () => {
         pacman.position.x += vector.x * 3;
         pacman.position.y += vector.y * 3;
@@ -267,8 +303,8 @@ sample2 = async () => {
         pacman.position.x = (800 + pacman.position.x) % 800;
         pacman.position.y = (600 + pacman.position.y) % 600;
 
-        ghost.position.x += (pacman.position.x - ghost.position.x)/100;
-        ghost.position.y += (pacman.position.y - ghost.position.y)/100;
+        ghost.position.x += (pacman.position.x - ghost.position.x)/speed;
+        ghost.position.y += (pacman.position.y - ghost.position.y)/speed;
         ghost.position.x = (800 + ghost.position.x) % 800;
         ghost.position.y = (600 + ghost.position.y) % 600;
 
