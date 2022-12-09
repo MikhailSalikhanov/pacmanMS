@@ -229,7 +229,7 @@ sample2 = async () => {
                 
                earthquake()   
                 
-                if (scoresCounter > 4) {
+                if (scoresCounter > 9) {
                     mainContainer.removeChild(spriteBG, title, scores, live, frame, pacman, ghost);
                     app.stage.removeChild(mainContainer);
                     finishContainer.removeChild(gameover);
